@@ -13,19 +13,25 @@ import org.popcraft.chunky.api.ChunkyAPI;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
+import net.minecraft.util.WorldSavePath;
+
+import org.popcraft.chunky.ChunkyProvider;
 
 public class ChunkyPlayerCount implements ModInitializer {
 	// This logger is used to write text to the console and the log file.
 	// It is considered best practice to use your mod id as the logger's name.
 	// That way, it's clear which mod wrote info, warnings, and errors.
-	public static final Logger LOGGER = LoggerFactory.getLogger("modid");
+	public static final Logger LOGGER = LoggerFactory.getLogger("ChunkyPlayerCount");
 	private static MinecraftServer server;
+	private static ChunkyAPI chunkyAPI;
 
 	@Override
 	public void onInitialize() {
 		// This code runs as soon as Minecraft is in a mod-load-ready state.
 		// However, some things (like resources) may still be uninitialized.
 		// Proceed with mild caution.
+		chunkyAPI = ChunkyProvider.get().getApi();
+		
 		ServerLifecycleEvents.SERVER_STARTING.register(server -> {
             ChunkyPlayerCount.server = server;
         });
@@ -37,16 +43,14 @@ public class ChunkyPlayerCount implements ModInitializer {
 	}
 
 	private void onPlayJoin(ServerPlayNetworkHandler handler, PacketSender sender, MinecraftServer server) {
-		// TODO pause chunky task, if one is running
+		chunkyAPI.pauseTask(getWorldName()); // handles if there is no task to pause
 	}
 
 	private void onPlayDisconnect(ServerPlayNetworkHandler handler, MinecraftServer server) {
 		if (serverEmpty()) {
-			// TODO start chunky task if there is one paused
+			chunkyAPI.continueTask(getWorldName()); // handles if there is no task to continue
 		}
 	}
-
-	// ChunkyAPI chunky = 
 
 	private static MinecraftServer getServer() {
         return server;
@@ -54,5 +58,9 @@ public class ChunkyPlayerCount implements ModInitializer {
 
 	private boolean serverEmpty() {
 		return PlayerLookup.all(getServer()).isEmpty();
+	}
+
+	private String getWorldName() {
+		return getServer().getSavePath(WorldSavePath.ROOT).getParent().getFileName().toString();
 	}
 }
