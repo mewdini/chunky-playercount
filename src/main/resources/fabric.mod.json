@@ -1,10 +1,10 @@
 {
   "schemaVersion": 1,
   "id": "chunky-playercount",
-  "version": "${version}",
+  "version": "${mod_version}",
 
   "name": "Chunky Player Count",
-  "description": "This is an example description! Tell everyone what your mod is about!",
+  "description": "Add-on for Chunky that pauses tasks when players are on the server.",
   "authors": [
     "Pablo Solano"
   ],
